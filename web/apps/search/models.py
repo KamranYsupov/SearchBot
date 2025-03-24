@@ -8,8 +8,14 @@ from web.db.model_mixins import (
 
 class Chat(AsyncBaseModel):
     """Модель telegram чата"""
-
-    link = models.URLField(_('Ссылка'))
+    chat_id = models.CharField(max_length=50, db_index=True)
+    name = models.CharField(
+        _('Название'),
+        max_length=100,
+        default=None,
+        null=True,
+        blank=True
+    )
 
     telegram_user = models.ForeignKey(
         'telegram_users.TelegramUser',

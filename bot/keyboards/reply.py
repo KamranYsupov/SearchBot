@@ -4,7 +4,7 @@ from datetime import datetime
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
-    ReplyKeyboardRemove,
+    ReplyKeyboardRemove, KeyboardButtonRequestChat,
 )
 from django.utils import timezone
 
@@ -25,12 +25,32 @@ def get_reply_contact_keyboard(
 ) -> ReplyKeyboardMarkup:
     keyboard = [
         [KeyboardButton(text=text, request_contact=True)],
-        [KeyboardButton(text='Отмена ❌')]
+        [KeyboardButton(text='Отмена ❌' )]
     ]
     
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
     
-    
+
+def get_reply_chat_keyboard(
+        text: str = 'Выбрать чат'
+) -> ReplyKeyboardMarkup:
+    keyboard = [
+        [KeyboardButton(
+            text=text,
+            request_chat=KeyboardButtonRequestChat(
+                request_id=1,
+                chat_is_channel=False,
+            )
+        )],
+        [KeyboardButton(text='Отмена ❌')]
+    ]
+
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True
+    )
+
+
 reply_cancel_keyboard = get_reply_keyboard(buttons=('Отмена ❌',))
 
 reply_keyboard_remove = ReplyKeyboardRemove()
@@ -40,4 +60,5 @@ reply_contact_keyboard = get_reply_contact_keyboard()
 reply_menu_keyboard = get_reply_keyboard(
     buttons=('🔎 Поиск 🔎', '📁 Настройка чатов 📁', '📝 Настройка ключевых слов 📝', )
 )
+reply_get_chat_keyboard = get_reply_chat_keyboard()
     

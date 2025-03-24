@@ -32,12 +32,7 @@ async def search_message_handler(
         )
     )
 
-    if isinstance(aiogram_type, types.Message):
-        await aiogram_type.answer(**message_data)
-    elif isinstance(aiogram_type, types.CallbackQuery):
-        await aiogram_type.message.edit_text(**message_data)
-    else:
-        return
+    await edit_text_or_answer(aiogram_type, **message_data)
 
 
 @router.callback_query(F.data == 'change_search_status')
