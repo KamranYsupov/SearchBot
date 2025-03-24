@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'django_extensions',
     
     # Приложения
+    'web.apps.telegram_users',
+    'web.apps.search',
 ]
 
 MIDDLEWARE = [
@@ -72,7 +74,6 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', 5432),
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
