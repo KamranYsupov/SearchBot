@@ -1,17 +1,18 @@
-from typing import Union, List
+from typing import Union, List, Sequence, Optional
 
 import loguru
 from aiogram import Router, types, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+from django.conf import settings
 
 from bot.handlers.state import ChatState
 from bot.keyboards.inline import get_inline_keyboard
 from bot.keyboards.reply import reply_menu_keyboard, reply_get_chat_keyboard, reply_keyboard_remove
 from bot.utils.bot import edit_text_or_answer
 from bot.utils.pagination import Paginator, get_pagination_buttons
-from web.apps.search.models import Chat
+from web.apps.search.models import Chat, Keyword
 from web.apps.telegram_users.models import TelegramUser
 
 router = Router()
@@ -32,18 +33,64 @@ async def cancel_handler(
 
 @router.message(F.text.casefold() == '📁 настройка чатов 📁')
 @router.callback_query(F.data == 'chats_settings')
-async def chat_settings_handler(
+async def chats_settings_handler(
         aiogram_type: Union[types.Message, types.CallbackQuery],
 ):
     telegram_user: TelegramUser = await TelegramUser.objects.aget(
         telegram_id=aiogram_type.from_user.id
     )
+    chats = await Chat.objects.afilter(telegram_user_id=telegram_user.id)
+
+    await array_settings_handler(
+        aiogram_type,
+        list_button_text='Список чатов 🗂',
+        callback_prefix='chat',
+        array=chats
+    )
+
+
+@router.callback_query(F.data.startswith('chat_kws_'))
+async def keywords_settings_handler(
+        callback: types.CallbackQuery,
+):
+    chat_id, previous_page_number = callback.data.split('_')[-2:]
+    chat: Chat = await Chat.objects.aget(id=chat_id)
+
+    chat_keywords = await Keyword.objects.afilter(chat_id=chat.id)
+
+    callback_data_end_text = f'{chat.id}_{previous_page_number}'
+
+    await array_settings_handler(
+        callback,
+        list_button_text='Список ключевых слов 🗂',
+        callback_prefix='keyword',
+        array=chat_keywords,
+        list_button_data=f'kw_l_{chat.id}_{previous_page_number}_1',
+        add_button_data=f'add_keyword_{callback_data_end_text}',
+        back_button_data=f'chat_{callback_data_end_text}'
+    )
+
+
+async def array_settings_handler(
+        aiogram_type: Union[types.Message, types.CallbackQuery],
+        callback_prefix: str,
+        list_button_text: str,
+        array: Optional[Sequence] = None,
+        list_button_data: Optional[str] = None,
+        add_button_data: Optional[str] = None,
+        back_button_data : Optional[str] = None,
+):
     buttons = {}
 
-    if await sync_to_async(telegram_user.chats.exists)():
-        buttons['Список чатов 🗂'] = 'chats_list_1'
+    if array:
+        buttons[list_button_text] = \
+            f'{callback_prefix}s_list_1' if not list_button_data else list_button_data
 
-    buttons['Добавить ➕'] = 'add_chat'
+    buttons['Добавить ➕'] = \
+        f'add_{callback_prefix}' if not add_button_data else add_button_data
+
+    if back_button_data:
+        buttons['Назад 🔙'] = back_button_data
 
     await edit_text_or_answer(
         aiogram_type,
@@ -60,10 +107,10 @@ async def chats_list_callback_handler(
     callback: types.CallbackQuery,
 ):
     page_number = int(callback.data.split('_')[-1])
-    per_page = 3
-    products: List[Chat] = await Chat.objects.a_all()
+    per_page = settings.CHATS_PER_PAGE
+    chats: List[Chat] = await Chat.objects.a_all()
     paginator = Paginator(
-        array=products,
+        array=chats,
         page_number=page_number,
         per_page=per_page,
     )
@@ -85,6 +132,7 @@ async def chats_list_callback_handler(
         sizes += (2, 1)
 
     buttons.update(pagination_buttons)
+    buttons['Назад 🔙'] = 'chats_settings'
 
     await callback.message.edit_text(
         'Выберите чат.',
@@ -101,13 +149,18 @@ async def chat_callback_handler(
 ):
     chat_id, previous_page_number = callback.data.split('_')[-2:]
     chat: Chat = await Chat.objects.aget(id=chat_id)
+
+    buttons = {
+        '💬 Ключевые слова  💬': f'chat_kws_{chat_id}_{previous_page_number}',
+        'Удалить 🗑': f'ask_rm_chat_{chat.id}_{previous_page_number}',
+        'Назад 🔙': f'chats_list_{previous_page_number}'
+    }
+
     await callback.message.edit_text(
         f'<b>{chat.name}</b>',
         reply_markup=get_inline_keyboard(
-            buttons={
-                'Удалить 🗑': f'ask_rm_chat_{chat.id}_{previous_page_number}',
-                'Назад 🔙': f'chats_list_{previous_page_number}'
-            }
+            buttons=buttons,
+            sizes=(1, 1, 1, ),
         ),
     )
 

@@ -111,5 +111,7 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
 BOT_LINK = f'https://t.me/{BOT_USERNAME}'
 MAX_MESSAGE_PER_SECOND = int(os.getenv('MAX_MESSAGE_PER_SECOND', 1))
+CHATS_PER_PAGE = int(os.getenv('CHATS_PER_PAGE', 5))
+KEYWORDS_PER_PAGE = int(os.getenv('KEYWORDS_PER_PAGE', 5))
 
 TELEGRAM_API_URL = 'https://api.telegram.org'
