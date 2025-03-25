@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     # Приложения
     'web.apps.telegram_users',
     'web.apps.search',
+    'web.apps.bots',
 ]
 
 MIDDLEWARE = [
@@ -113,5 +114,7 @@ BOT_LINK = f'https://t.me/{BOT_USERNAME}'
 MAX_MESSAGE_PER_SECOND = int(os.getenv('MAX_MESSAGE_PER_SECOND', 1))
 CHATS_PER_PAGE = int(os.getenv('CHATS_PER_PAGE', 5))
 KEYWORDS_PER_PAGE = int(os.getenv('KEYWORDS_PER_PAGE', 5))
+
+USERBOTS_SESSIONS_DIR = 'userbots/sessions/'
 
 TELEGRAM_API_URL = 'https://api.telegram.org'
