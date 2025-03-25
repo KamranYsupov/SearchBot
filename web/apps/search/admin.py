@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Match
+
+@admin.register(Match)
+class MatchAdmin(admin.ModelAdmin):
+    readonly_fields = (
+        'message_link',
+        'keyword',
+        'created_at'
+    )

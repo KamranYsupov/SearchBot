@@ -8,11 +8,13 @@ from .models import UserBot
 @admin.register(UserBot)
 class UserBotAdmin(admin.ModelAdmin):
     fields = (
+        'telegram_id',
         'name',
         'api_id',
         'api_hash',
         'phone_number',
-        'session',
+        'session_1',
+        'session_2',
     )
     readonly_fields = (
         'api_id',

@@ -129,6 +129,7 @@ async def process_keyword_text_handler(
         '<b>Ключевое слово успешно добавлено ✅</b>',
         reply_markup=reply_menu_keyboard
     )
+    await state.clear()
 
     chat_id = state_data['chat_id']
     await message.answer(

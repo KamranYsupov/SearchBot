@@ -2,7 +2,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class ChatState(StatesGroup):
-    chat_id = State()
+    chat_link = State()
     name = State()
 
 

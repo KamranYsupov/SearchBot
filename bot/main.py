@@ -6,6 +6,7 @@ from django.conf import settings
 import loguru
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from pyrogram import utils
 
 
 async def main():
@@ -16,6 +17,9 @@ async def main():
 
     from middlewares.throttling import rate_limit_middleware
     from handlers.routing import get_main_router
+    from userbots.utils.peer import get_peer_type_new
+
+    utils.get_peer_type = get_peer_type_new
 
     bot = Bot(
         token=settings.BOT_TOKEN,

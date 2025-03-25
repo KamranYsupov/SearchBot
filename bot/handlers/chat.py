@@ -6,12 +6,16 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 from django.conf import settings
+from pyrogram import Client
+from pyrogram.errors import BadRequest, NotAcceptable, UsernameInvalid
 
 from bot.handlers.state import ChatState
 from bot.keyboards.inline import get_inline_keyboard
-from bot.keyboards.reply import reply_menu_keyboard, reply_get_chat_keyboard, reply_keyboard_remove
+from bot.keyboards.reply import reply_menu_keyboard, reply_get_chat_keyboard, reply_keyboard_remove, \
+    reply_cancel_keyboard
 from bot.utils.bot import edit_text_or_answer
 from bot.utils.pagination import Paginator, get_pagination_buttons
+from web.apps.bots.models import UserBot
 from web.apps.search.models import Chat, Keyword
 from web.apps.telegram_users.models import TelegramUser
 
@@ -186,7 +190,23 @@ async def rm_chat_callback_handler(
         callback: types.CallbackQuery,
 ):
     chat_id = callback.data.split('_')[-1]
-    await sync_to_async(Chat.objects.filter(id=chat_id).delete)()
+    chat = await Chat.objects.aget(id=chat_id)
+    user_bot = await UserBot.objects.aget(id=chat.user_bot_id)
+    async with user_bot.configure_client(
+            session_workdir=settings.USER_BOTS_SESSIONS_ROOT_2
+    ) as client:
+        client: Client = client
+        try:
+            await client.leave_chat(chat.chat_link)
+        except NotAcceptable:
+            pass
+        except BadRequest as e:
+            print(e)
+
+    await chat.adelete()
+
+    user_bot.chats_count -= 1
+    await user_bot.asave()
 
     await callback.message.edit_text(
         f'<b>Чат успешно удален ✅</b>',
@@ -203,30 +223,30 @@ async def add_chat_callback_handler(
 ):
     await callback.message.delete()
     await callback.message.answer(
-        'Отправьте чат',
-        reply_markup=reply_get_chat_keyboard,
+        'Отправьте ссылку чата',
+        reply_markup=reply_cancel_keyboard,
     )
-    await state.set_state(ChatState.chat_id)
+    await state.set_state(ChatState.chat_link)
 
 
 @router.message(
-    StateFilter(ChatState.chat_id),
-    F.chat_shared,
+    StateFilter(ChatState.chat_link),
+    F.text,
 )
-async def chat_shared_handler(
+async def process_chat_link_handler(
         message: types.Message,
         state: FSMContext,
 ):
-    chat_id = message.chat_shared.chat_id
+    chat_link = message.text
     chat_exists: bool = await sync_to_async(
-        Chat.objects.filter(chat_id=chat_id).exists
+        Chat.objects.filter(chat_link=chat_link).exists
     )()
 
     if chat_exists:
         await message.answer('Этот чат уже добавлен.')
         return
 
-    await state.update_data(chat_id=chat_id)
+    await state.update_data(chat_link=chat_link)
     await state.set_state(ChatState.name)
 
     await message.answer('Отправьте название чата 📝')
@@ -245,12 +265,54 @@ async def process_chat_name_handler(
         return
 
     state_data = await state.update_data(name=message.text)
+    chat_link = state_data['chat_link']
+
+    user_bot: UserBot = await sync_to_async(
+         UserBot.objects.filter(chats_count__lt=500).first
+    )()
+
+    async with user_bot.configure_client(
+        session_workdir=settings.USER_BOTS_SESSIONS_ROOT_2
+    ) as client:
+        is_user_bot_chat_member = await sync_to_async(
+            Chat.objects.filter(
+                chat_link=chat_link,
+                user_bot_id=user_bot.id
+            ).exists
+        )()
+
+        if not is_user_bot_chat_member:
+            failure_join_chat = False
+
+            try:
+                await client.join_chat(chat_link)
+            except UsernameInvalid:
+                chat_username = chat_link.split('/')[-1]
+                try:
+                    await client.join_chat(chat_username)
+                except BadRequest:
+                    failure_join_chat = True
+            except BadRequest:
+                failure_join_chat = True
+
+            if failure_join_chat:
+                await message.answer(
+                    'Не удалось присоединиться к чату.',
+                    reply_markup=reply_menu_keyboard,
+                )
+                await state.clear()
+                return
+
+            user_bot.chats_count += 1
+            await user_bot.asave()
+
 
     telegram_user: TelegramUser = await TelegramUser.objects.aget(
         telegram_id=message.from_user.id
     )
     await Chat.objects.acreate(
         **state_data,
+        user_bot_id=user_bot.id,
         telegram_user_id=telegram_user.id
     )
 
@@ -258,6 +320,7 @@ async def process_chat_name_handler(
         '<b>Чат успешно добавлен ✅</b>',
         reply_markup=reply_menu_keyboard
     )
+    await state.clear()
 
 
 
