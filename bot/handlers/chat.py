@@ -198,15 +198,13 @@ async def rm_chat_callback_handler(
         client: Client = client
         try:
             await client.leave_chat(chat.chat_link)
-        except NotAcceptable:
-            pass
+            user_bot.chats_count -= 1
+            await user_bot.asave()
         except BadRequest as e:
-            print(e)
+            pass
 
     await chat.adelete()
 
-    user_bot.chats_count -= 1
-    await user_bot.asave()
 
     await callback.message.edit_text(
         f'<b>Чат успешно удален ✅</b>',
