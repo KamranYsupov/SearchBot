@@ -23,6 +23,9 @@ tgcrypto = "^1.2.5"
 langdetect = "^1.0.9"
 pymorphy2 = "^0.9.1"
 nltk = "^3.9.1"
+celery = "^5.4.0"
+redis = "^5.2.1"
+flower = "^2.0.1"
 
 
 
