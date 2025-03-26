@@ -17,5 +17,8 @@ app.conf.beat_schedule = {
         'task': 'web.apps.search.tasks.send_keyword_search_matches',
         'schedule': crontab(hour='8', minute='0')
     },
-
+    'ask-to-share-bot-task': {
+        'task': 'web.apps.telegram_users.tasks.send_ask_message_to_share_bot_task',
+        'schedule': crontab(hour='9', minute='0', day_of_month='*/5'),
+    },
 }

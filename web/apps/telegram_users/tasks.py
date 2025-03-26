@@ -17,3 +17,15 @@ def send_message_task(
 ):
     telegram_service.send_message(chat_id, text)
 
+
+@shared_task(ignore_result=True)
+def send_ask_message_to_share_bot_task(
+    text: str = 'Нравиться наш бот? Поделитесь с друзьями!',
+):
+    chat_ids = TelegramUser.objects.all().values_list(
+        'telegram_id', flat=True
+    )
+
+    for chat_id in chat_ids:
+        send_message_task.delay(chat_id, text)
+

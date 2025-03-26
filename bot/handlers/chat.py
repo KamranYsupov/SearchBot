@@ -161,7 +161,8 @@ async def chat_callback_handler(
     }
 
     await callback.message.edit_text(
-        f'<b>{chat.name}</b>',
+        f'<b>{chat.name}</b>\n\n'
+        f'<em>Ссылка: <b>{chat.chat_link}</b></em>',
         reply_markup=get_inline_keyboard(
             buttons=buttons,
             sizes=(1, 1, 1, ),
