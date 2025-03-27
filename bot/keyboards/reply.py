@@ -58,7 +58,7 @@ reply_keyboard_remove = ReplyKeyboardRemove()
 reply_contact_keyboard = get_reply_contact_keyboard()
 
 reply_menu_keyboard = get_reply_keyboard(
-    buttons=('🔎 Поиск 🔎', '📁 Настройка чатов 📁', )
+    buttons=('🔎 Поиск 🔎', '📁 Проекты 📁', )
 )
 reply_get_chat_keyboard = get_reply_chat_keyboard()
     

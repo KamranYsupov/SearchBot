@@ -18,16 +18,11 @@ async def main():
     from middlewares.throttling import rate_limit_middleware
     from handlers.routing import get_main_router
     from userbots.utils.peer import get_peer_type_new
+    from bot.loader import bot, dp
 
     utils.get_peer_type = get_peer_type_new
 
-    bot = Bot(
-        token=settings.BOT_TOKEN,
-        default=DefaultBotProperties(
-            parse_mode='HTML'
-        )
-    )
-    dp = Dispatcher()
+
     
     try:
         dp.message.middleware(rate_limit_middleware)

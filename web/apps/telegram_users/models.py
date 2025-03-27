@@ -31,6 +31,21 @@ class TelegramUser(AbstractTelegramUser):
         auto_now_add=True
     )
 
+    keywords_chat_id = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        default=None,
+        blank=True,
+    )
+    keywords_chat_link = models.URLField(
+        max_length=70,
+        unique=True,
+        null=True,
+        default=None,
+        blank=True
+    )
+
     class Meta:
         verbose_name = _('пользователь')
         verbose_name_plural = _('Telegram пользователи')
