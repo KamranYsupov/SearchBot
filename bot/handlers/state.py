@@ -18,7 +18,8 @@ class KeywordState(StatesGroup):
     text = State()
 
 
-class KeywordsChatState(StatesGroup):
+class LeadChatState(StatesGroup):
+    project_id = State()
+    previous_page_number = State()
     chat_id = State()
-    chat_link = State()
 

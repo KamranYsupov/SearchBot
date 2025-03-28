@@ -8,18 +8,14 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db.models import Q
 
-from bot.handlers.state import KeywordState, KeywordsChatState
+from bot.handlers.state import KeywordState
 from bot.handlers.utils import array_settings_handler, list_handler
 from bot.keyboards.inline import get_inline_keyboard
 from bot.keyboards.reply import (
     reply_menu_keyboard,
     reply_cancel_keyboard, reply_get_chat_keyboard,
 )
-from bot.utils.pagination import Paginator, get_pagination_buttons
-from bot.utils.userbot import join_chat
-from web.apps.bots.models import UserBot
-from web.apps.search.models import Chat, Keyword
-from web.apps.telegram_users.models import TelegramUser
+from web.apps.search.models import Keyword
 
 router = Router()
 
@@ -51,7 +47,7 @@ async def keywords_list_callback_handler(
     project_id = callback.data.split('_')[-3]
     previous_page_number, page_number = map(int, callback.data.split('_')[-2:])
 
-    keywords: List[Keyword] = await Keyword.objects.a_all()
+    keywords: List[Keyword] = await Keyword.objects.afilter(project_id=project_id)
     pagination_callback_data = f'{project_id}_{previous_page_number}'
     await list_handler(
         callback,
@@ -115,10 +111,12 @@ async def rm_keyword_callback_handler(
 
     await keyword.adelete()
 
+    success_text = '<b>Ключевое слово успешно удалено ✅</b>'
+    back_button_text = 'Назад 🔙'
     await callback.message.edit_text(
-        f'<b>Ключевое слово успешно удалено ✅</b>',
+        text=success_text,
         reply_markup=get_inline_keyboard(
-            buttons={'Назад 🔙': f'p_kws_{project_id}_{previous_page_number}'}
+            buttons={back_button_text: f'project_{project_id}_{previous_page_number}'}
         ),
     )
 
@@ -194,83 +192,4 @@ async def process_keyword_text_handler(
             }
         )
     )
-
-
-@router.message(F.text.casefold() == 'добавить чат для ключевых слов ➕')
-async def add_keywords_chat_handler(
-        message: types.Message,
-        state: FSMContext,
-):
-    telegram_user: TelegramUser = await TelegramUser.objects.aget(
-        telegram_id=message.from_user.id
-    )
-    if not telegram_user:
-        return
-
-    await message.answer(
-        'Выберите чат.',
-        reply_markup=reply_get_chat_keyboard,
-    )
-    await state.set_state(KeywordsChatState.chat_id)
-
-
-@router.message(
-    F.chat_shared,
-    StateFilter(KeywordsChatState.chat_id)
-)
-async def process_chat_id_handler(
-        message: types.Message,
-        state: FSMContext,
-):
-    await state.update_data(chat_id=message.chat_shared.chat_id)
-
-    await message.answer(
-        'Отправьте ссылку на этот чат.',
-        reply_markup=reply_cancel_keyboard,
-    )
-    await state.set_state(KeywordsChatState.chat_link)
-
-
-@router.message(
-    F.text,
-    StateFilter(KeywordsChatState.chat_link)
-)
-async def process_chat_id_handler(
-        message: types.Message,
-        state: FSMContext,
-):
-    state_data = await state.update_data(chat_link=message.text)
-    chat_link = state_data['chat_link']
-
-    if await sync_to_async(
-        TelegramUser.objects.filter(
-            (
-                Q(keyword_chat_id=state_data['chat_id']) |
-                Q(keyword_chat_link=chat_link)
-            ),
-            ~Q(telegram_id=message.from_user.id),
-        ).exists
-    )():
-        await message.answer('Этот чат уже добавлен другим пользователем.')
-        await state.clear()
-        return
-
-    user_bot: UserBot = await sync_to_async(
-        UserBot.objects.filter(chats_count__lt=500).first
-    )()
-
-    if not await join_chat(chat_link, user_bot):
-        await message.answer(
-            'Не удалось присоединиться к чату.',
-            reply_markup=reply_menu_keyboard,
-        )
-        await state.clear()
-        return
-
-
-    await message.answer(
-        'Отправьте ссылку на этот чат.',
-        reply_markup=reply_cancel_keyboard,
-    )
-    await state.set_state(KeywordsChatState.chat_link)
 

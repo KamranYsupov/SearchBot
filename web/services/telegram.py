@@ -1,6 +1,7 @@
 import json
 
 import requests
+from aiogram.types import ChatIdUnion
 from django.conf import settings
 
 
@@ -19,9 +20,10 @@ class TelegramService:
 
     def send_message(
             self,
-            chat_id: int,
+            chat_id: ChatIdUnion,
             text: str,
             reply_markup: dict[str, list] | None = None,
+            reply_to: dict[str | int] | None = None,
             parse_mode: str = 'HTML',
     ):
         payload = {
@@ -33,10 +35,31 @@ class TelegramService:
         if reply_markup:
             payload['reply_markup'] = json.dumps(reply_markup)
 
+        if reply_to:
+            payload['reply_to'] = json.dumps(reply_to)
+
         response = requests.post(
             url=f'{self.__bot_api_url}/sendMessage',
             json=payload,
         )
+
+        return response
+
+    def forward_message(
+            self,
+            chat_id: ChatIdUnion,
+            from_chat_id: ChatIdUnion,
+            message_id: int
+    ):
+        method = 'forwardMessage'
+        url = f'{self.__bot_api_url}/{method}'
+
+        payload = {
+            'chat_id': chat_id,
+            'from_chat_id': from_chat_id,
+            'message_id': message_id,
+        }
+        response = requests.post(url=url, json=payload)
 
         return response
 

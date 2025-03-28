@@ -1,22 +1,18 @@
-from typing import Union, List, Sequence, Optional
+from typing import Union, List
 
 import loguru
 from aiogram import Router, types, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from asgiref.sync import sync_to_async
 from django.conf import settings
-from pyrogram import Client
-from pyrogram.errors import BadRequest, NotAcceptable, UsernameInvalid
 
 from bot.handlers.state import ProjectState
 from bot.handlers.utils import array_settings_handler, list_handler
 from bot.keyboards.inline import get_inline_keyboard
-from bot.keyboards.reply import reply_menu_keyboard, reply_keyboard_remove, \
-    reply_cancel_keyboard
+from bot.keyboards.reply import reply_menu_keyboard, reply_cancel_keyboard
 from bot.utils.userbot import leave_chat
 from web.apps.bots.models import UserBot
-from web.apps.search.models import Chat, Keyword, Project
+from web.apps.search.models import Chat, Project
 from web.apps.telegram_users.models import TelegramUser
 
 router = Router()
@@ -65,7 +61,7 @@ async def projects_list_callback_handler(
         array=projects,
         button_text_obj_attr_name='name',
         page_number=page_number,
-        per_page=settings.CHATS_PER_PAGE,
+        per_page=settings.PROJECTS_PER_PAGE,
         message_text='Выберите проект.'
     )
 
@@ -77,10 +73,13 @@ async def project_callback_handler(
     project_id, previous_page_number = callback.data.split('_')[-2:]
     project: Project = await Project.objects.aget(id=project_id)
 
+    buttons_callback_data = f'{project.id}_{previous_page_number}'
+
     buttons = {
-        '⚙️ Настройка групп для отслеживания ⚙️': f'p_chats_{project_id}_{previous_page_number}',
-        '💬 Ключевые слова  💬': f'p_kws_{project_id}_{previous_page_number}',
-        'Удалить 🗑': f'ask_rm_project_{project.id}_{previous_page_number}',
+        '📥 Группа для получения лидов 📥': f'lead_chat_{buttons_callback_data}',
+        '⚙️ Настройка групп для отслеживания ⚙️': f'p_chats_{buttons_callback_data}',
+        '💬 Ключевые слова  💬': f'p_kws_{buttons_callback_data}',
+        'Удалить 🗑': f'ask_rm_project_{buttons_callback_data}',
         'Назад 🔙': f'projects_list_{previous_page_number}'
     }
 
@@ -118,15 +117,19 @@ async def rm_project_callback_handler(
     project: Project = await Project.objects.aget(id=project_id)
     project_chats: List[Chat] = await Chat.objects.afilter(project_id=project.id)
 
-    user_bot: UserBot = await UserBot.objects.aget(id=project_chats[0].user_bot_id)
+    if project_chats:
+        wait_text = '<em>Подожите . . .</em>'
+        await callback.message.edit_text(wait_text)
 
-    for chat in project_chats:
-        if chat.user_bot_id != user_bot.id:
-            user_bot: UserBot = await UserBot.objects.aget(
-                id=chat.user_bot_id
-            )
+        user_bot: UserBot = await UserBot.objects.aget(id=project_chats[0].user_bot_id)
 
-        await leave_chat(chat.chat_id, user_bot)
+        for chat in project_chats:
+            if chat.user_bot_id != user_bot.id:
+                user_bot: UserBot = await UserBot.objects.aget(
+                    id=chat.user_bot_id
+                )
+
+            await leave_chat(chat.chat_id, user_bot)
 
     await project.adelete()
 

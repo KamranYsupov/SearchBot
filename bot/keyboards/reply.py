@@ -40,6 +40,7 @@ def get_reply_chat_keyboard(
             request_chat=KeyboardButtonRequestChat(
                 request_id=1,
                 chat_is_channel=False,
+                request_title=True,
             )
         )],
         [KeyboardButton(text='Отмена ❌')]

@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from pyrogram import Client
+from pyrogram.enums import ChatType
 from pyrogram.errors import BadRequest, NotAcceptable, UsernameInvalid
 
 from bot.handlers.state import ChatState
@@ -52,7 +53,7 @@ async def chats_list_callback_handler(
     project_id = callback.data.split('_')[-3]
     previous_page_number, page_number = map(int, callback.data.split('_')[-2:])
 
-    chats: List[Chat] = await Chat.objects.a_all()
+    chats: List[Chat] = await Chat.objects.afilter(project_id=project_id)
     pagination_callback_data = f'{project_id}_{previous_page_number}'
     await list_handler(
         callback,
@@ -113,14 +114,18 @@ async def rm_chat_callback_handler(
     chat: Chat = await Chat.objects.aget(id=chat_id)
     project_id = chat.project_id
 
+    await callback.message.edit_text('<em>Выхожу из чата . . .</em>')
+
     user_bot = await UserBot.objects.aget(id=chat.user_bot_id)
     await leave_chat(chat.chat_id, user_bot)
     await chat.adelete()
 
+    success_text = f'<b>Чат успешно удален ✅</b>'
+    back_button_text = 'Назад 🔙'
     await callback.message.edit_text(
-        f'<b>Чат успешно удален ✅</b>',
+        text=success_text,
         reply_markup=get_inline_keyboard(
-            buttons={'Назад 🔙': f'p_chats_{project_id}_{previous_page_number}'}
+            buttons={back_button_text: f'project_{project_id}_{previous_page_number}'}
         ),
     )
 
@@ -172,7 +177,11 @@ async def process_chat_link_handler(
     user_bot: UserBot = await sync_to_async(
         UserBot.objects.filter(chats_count__lt=500).first
     )()
-    pyrogram_chat = await join_chat(chat_link, user_bot)
+    pyrogram_chat, is_private = await join_chat(
+        chat_link=chat_link,
+        user_bot=user_bot,
+        return_is_private=True,
+    )
 
     if not pyrogram_chat:
         await message.answer(
@@ -189,6 +198,7 @@ async def process_chat_link_handler(
     state_data = await state.update_data(
         chat_id=pyrogram_chat.id,
         name=pyrogram_chat.title,
+        is_private=is_private,
     )
     project_id = state_data['project_id']
     previous_page_number = state_data.pop('previous_page_number')

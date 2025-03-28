@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -13,9 +13,11 @@ from web.apps.search.models import Chat
 async def join_chat(
         chat_link: str,
         user_bot: UserBot,
-        user_bot_session_workdir: str = settings.USER_BOTS_SESSIONS_ROOT_2
-) -> Optional[types.Chat]:
+        user_bot_session_workdir: str = settings.USER_BOTS_SESSIONS_ROOT_2,
+        return_is_private: bool = False
+) -> Union[Tuple[Optional[types.Chat], bool], Optional[types.Chat]]:
     chat = None
+    is_private = True
 
     async with user_bot.configure_client(
             session_workdir=user_bot_session_workdir
@@ -24,6 +26,7 @@ async def join_chat(
             chat = await client.join_chat(chat_link)
         except UsernameInvalid:
             chat_username = chat_link.split('/')[-1]
+            is_private = False
             try:
                 chat = await client.join_chat(chat_username)
             except RPCError:
@@ -32,12 +35,12 @@ async def join_chat(
             pass
 
         if chat is None:
-            return None
+            return None if not return_is_private else None, is_private
 
         user_bot.chats_count += 1
         await user_bot.asave()
 
-    return chat
+    return chat, is_private
 
 
 async def leave_chat(

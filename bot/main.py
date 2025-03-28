@@ -19,14 +19,13 @@ async def main():
     from handlers.routing import get_main_router
     from userbots.utils.peer import get_peer_type_new
     from bot.loader import bot, dp
+    from bot.handlers.lead_chat import router as lead_chat_router
 
     utils.get_peer_type = get_peer_type_new
 
 
-    
     try:
-        dp.message.middleware(rate_limit_middleware)
-        dp.include_router(get_main_router())
+        dp.include_routers(get_main_router(), lead_chat_router)
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
         await bot.session.close()

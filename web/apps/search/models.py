@@ -12,6 +12,31 @@ class Project(AsyncBaseModel):
         _('Название'),
         max_length=200,
     )
+    lead_chat_id = models.CharField(
+        _('ID группы для получения лидов'),
+        max_length=50,
+        unique=True,
+        null=True,
+        default=None,
+        blank=True,
+    )
+    lead_chat_link = models.URLField(
+        _('Ссылка на группу для получения лидов'),
+        max_length=70,
+        unique=True,
+        null=True,
+        default=None,
+        blank=True
+    )
+    lead_chat_name = models.CharField(
+        _('Название группы для получения лидов'),
+        max_length=70,
+        unique=True,
+        null=True,
+        default=None,
+        blank=True
+    )
+
     telegram_user = models.ForeignKey(
         'telegram_users.TelegramUser',
         related_name='chats',
@@ -27,6 +52,10 @@ class Chat(AsyncBaseModel):
     name = models.CharField(
         _('Название'),
         max_length=130,
+    )
+    is_private = models.BooleanField(
+        _('Приватный'),
+        default=False,
     )
 
     user_bot = models.ForeignKey(
@@ -68,11 +97,30 @@ class Keyword(AsyncBaseModel):
 
 class Match(AsyncBaseModel, TimestampMixin):
     """Модель совпадения слова в тексте"""
-    message_link = models.URLField(_('Ссылка на сообщение'))
-    message_id = models.PositiveIntegerField(_('ID сообщения в буферной группе'))
+    message_link = models.URLField(
+        _('Ссылка на сообщение'),
+        unique=True,
+    )
+    message_id = models.PositiveIntegerField(
+        _('ID сообщения в буферной группе'),
+        unique=True,
+        db_index=True,
+    )
+    from_user_username = models.CharField(
+        _('Username автора сообщения'),
+        max_length=70,
+        db_index=True,
+        null=True,
+    )
     is_reported = models.BooleanField(_('Отправлен'), default=False)
     updated_at = None
 
+    chat = models.ForeignKey(
+        'search.Chat',
+        verbose_name=_('Чат'),
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
     keyword = models.ForeignKey(
         'search.Keyword',
         verbose_name=_('Ключевое слово'),
