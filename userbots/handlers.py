@@ -30,7 +30,6 @@ async def find_keyword_in_message_handler_func(client: Client, message: types.Me
         project_id=chat.project_id,
     )
 
-    matches = []
     async for keyword in found_keywords:
         if not keyword.project.telegram_user.search:
             continue
@@ -48,9 +47,7 @@ async def find_keyword_in_message_handler_func(client: Client, message: types.Me
             chat_id=chat.id,
             keyword_id=keyword.id
         )
-        matches.append(match)
-
-    await sync_to_async(Match.objects.bulk_create)(matches)
+        await match.asave()
 
 
 message_handler = MessageHandler(

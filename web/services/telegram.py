@@ -23,20 +23,18 @@ class TelegramService:
             chat_id: ChatIdUnion,
             text: str,
             reply_markup: dict[str, list] | None = None,
-            reply_to: dict[str | int] | None = None,
+            reply_to_message_id: int = None,
             parse_mode: str = 'HTML',
     ):
         payload = {
             'chat_id': chat_id,
             'text': text,
             'parse_mode': parse_mode,
+            'reply_to_message_id': reply_to_message_id
         }
 
         if reply_markup:
             payload['reply_markup'] = json.dumps(reply_markup)
-
-        if reply_to:
-            payload['reply_to'] = json.dumps(reply_to)
 
         response = requests.post(
             url=f'{self.__bot_api_url}/sendMessage',

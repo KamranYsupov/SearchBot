@@ -5,7 +5,6 @@ from .search import router as search_router
 from .project import router as project_router
 from .chat import router as chat_router
 from .keyword import router as keyword_router
-from bot.middlewares.throttling import rate_limit_middleware
 
 
 def get_main_router():
@@ -18,6 +17,5 @@ def get_main_router():
         chat_router,
         keyword_router,
     )
-    main_router.message.middleware(rate_limit_middleware)
 
     return main_router

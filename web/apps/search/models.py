@@ -39,7 +39,7 @@ class Project(AsyncBaseModel):
 
     telegram_user = models.ForeignKey(
         'telegram_users.TelegramUser',
-        related_name='chats',
+        related_name='projects',
         verbose_name=_('Пользователь'),
         on_delete=models.CASCADE,
     )
@@ -99,11 +99,9 @@ class Match(AsyncBaseModel, TimestampMixin):
     """Модель совпадения слова в тексте"""
     message_link = models.URLField(
         _('Ссылка на сообщение'),
-        unique=True,
     )
     message_id = models.PositiveIntegerField(
         _('ID сообщения в буферной группе'),
-        unique=True,
         db_index=True,
     )
     from_user_username = models.CharField(

@@ -160,48 +160,5 @@ async def rm_lead_chat_handler(
     )
 
 
-@router.message(F.chat.id == int(settings.KEYWORDS_MATCHES_BUFFER_GROUP_ID))
-async def send_match_from_buffer_group_handler(
-        message: types.Message,
-):
-    match: Match = await sync_to_async(
-        Match.objects.select_related(
-            'chat',
-            'keyword',
-            'keyword__project__telegram_user'
-        ).filter(message_id=message.message_id).first
-    )()
-    if not match:
-        return
-
-    lead_chat_id = match.keyword.project.lead_chat_id
-
-    forwarded_message = await message.forward(chat_id=lead_chat_id)
-
-    message_template = (
-        'Найдено совпадение слова <em>{keyword}</em> '
-        'в чате <b>{chat}</b>!\n\n'
-
-        + (f'<b>Автор</b>: @{match.from_user_username}\n\n'
-        if match.from_user_username else '')
-
-        + ('<a href="{message_link}">'
-        '<b><em>Ссылка на сообщение</em></b>'
-        '</a>' if not match.chat.is_private else '')
-    )
-    message_text = message_template.format(
-        keyword=match.keyword.text,
-        chat=match.chat.name,
-        message_link=match.message_link,
-    )
-
-    await message.bot.send_message(
-        chat_id=lead_chat_id,
-        text=message_text,
-        reply_to_message_id=forwarded_message.message_id,
-    )
-
-
-
 
 
