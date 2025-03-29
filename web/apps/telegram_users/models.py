@@ -9,6 +9,17 @@ from web.db.model_mixins import (
 class TelegramUser(AbstractTelegramUser):
     """Модель telegram пользователя"""
 
+    class Language:
+        RUSSIAN = 'Russian'
+        ENGLISH = 'English'
+        HEBREW = 'Hebrew'
+
+        LANGUAGE_CHOICES = (
+            (RUSSIAN, 'Русский'),
+            (ENGLISH, 'Английский'),
+            (HEBREW, 'Иврит')
+        )
+
     telegram_id = models.BigIntegerField(
         verbose_name=_('Телеграм ID'),
         unique=True,
@@ -26,6 +37,13 @@ class TelegramUser(AbstractTelegramUser):
         _('Поиск'),
         default=True,
     )
+    language = models.CharField(
+        _('Язык'),
+        choices=Language.LANGUAGE_CHOICES,
+        default=Language.RUSSIAN,
+        max_length=10,
+    )
+
     time_joined = models.DateTimeField(
         _('Время добавления'),
         auto_now_add=True
