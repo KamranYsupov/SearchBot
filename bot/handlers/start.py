@@ -3,7 +3,8 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from django.db.models import Q
 
-from bot.keyboards.reply import reply_menu_keyboard
+from bot.keyboards.inline import get_inline_keyboard
+from bot.keyboards.reply import get_reply_menu_keyboard
 from web.apps.telegram_users.models import TelegramUser
 
 router = Router()
@@ -28,10 +29,23 @@ async def start_command_handler(
         telegram_user.full_name = from_user.full_name
         await telegram_user.asave()
 
-    message_text = f'Привет, {message.from_user.first_name}.'
+    message_text = (
+        f'Привет, {message.from_user.first_name}.\n\n'
+        f'Выбери язык:'
+    )
+
+    buttons = {
+        'Русский': 'lang_russian',
+        'English': 'lang_english',
+        'עִברִית': 'lang_hebrew'
+
+    }
     await message.answer(
         message_text,
-        reply_markup=reply_menu_keyboard,
+        reply_markup=get_inline_keyboard(
+            buttons=buttons,
+            sizes=(1, 1, 1)
+        ),
     )
     
     

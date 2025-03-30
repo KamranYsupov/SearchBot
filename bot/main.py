@@ -24,7 +24,6 @@ async def main():
 
 
     try:
-        dp.message.middleware(rate_limit_middleware())
         dp.include_routers(get_main_router())
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:

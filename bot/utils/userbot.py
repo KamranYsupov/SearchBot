@@ -5,7 +5,7 @@ from django.conf import settings
 from pyrogram import types
 from pyrogram.errors import UsernameInvalid, RPCError
 
-from bot.keyboards.reply import reply_menu_keyboard
+from bot.keyboards.reply import get_reply_menu_keyboard
 from web.apps.bots.models import UserBot
 from web.apps.search.models import Chat
 

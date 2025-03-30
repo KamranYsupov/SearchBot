@@ -1,24 +1,26 @@
+from typing import Union
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from web.db.model_mixins import (
     AbstractTelegramUser,
+    LanguageMixin,
+)
+from web.apps.bots.models import (
+    RussianBotTexts,
+    EnglishBotTexts,
+    HebrewBotTexts,
 )
 
+BotTextsUnion = Union[
+    RussianBotTexts,
+    EnglishBotTexts,
+    HebrewBotTexts,
+]
 
-class TelegramUser(AbstractTelegramUser):
+class TelegramUser(AbstractTelegramUser, LanguageMixin):
     """Модель telegram пользователя"""
-
-    class Language:
-        RUSSIAN = 'Russian'
-        ENGLISH = 'English'
-        HEBREW = 'Hebrew'
-
-        LANGUAGE_CHOICES = (
-            (RUSSIAN, 'Русский'),
-            (ENGLISH, 'Английский'),
-            (HEBREW, 'Иврит')
-        )
 
     telegram_id = models.BigIntegerField(
         verbose_name=_('Телеграм ID'),
@@ -37,12 +39,6 @@ class TelegramUser(AbstractTelegramUser):
         _('Поиск'),
         default=True,
     )
-    language = models.CharField(
-        _('Язык'),
-        choices=Language.LANGUAGE_CHOICES,
-        default=Language.RUSSIAN,
-        max_length=10,
-    )
 
     time_joined = models.DateTimeField(
         _('Время добавления'),
@@ -56,3 +52,21 @@ class TelegramUser(AbstractTelegramUser):
 
     def __str__(self):
         return self.full_name if self.full_name else str(self.telegram_id)
+
+    async def get_texts_model(self):
+        model = None
+
+        if self.language == LanguageMixin.RUSSIAN:
+            model = RussianBotTexts
+        elif self.language == LanguageMixin.ENGLISH:
+            model =  EnglishBotTexts
+        elif self.language == LanguageMixin.HEBREW:
+            model = HebrewBotTexts
+
+        if model:
+            return await model.aload()
+
+        return None
+
+
+

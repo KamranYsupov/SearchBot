@@ -4,29 +4,27 @@ import loguru
 from aiogram import Router, types, F
 
 from bot.keyboards.inline import get_inline_keyboard
-from bot.keyboards.reply import reply_menu_keyboard
+from bot.keyboards.reply import get_reply_menu_keyboard
 from bot.utils.bot import edit_text_or_answer
-from web.apps.telegram_users.models import TelegramUser
+from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
 
 router = Router()
 
 
-@router.message(F.text.casefold() == '🔎 поиск 🔎')
+@router.message(F.text.startswith('🔎 '), F.text.endswith(' 🔎'))
 async def search_message_handler(
         aiogram_type: Union[types.Message, types.CallbackQuery],
 ):
     telegram_user: TelegramUser = await TelegramUser.objects.aget(
         telegram_id=aiogram_type.from_user.id
     )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
-    button_text = 'Включить ✅' if not telegram_user.search else 'Выключить ❌'
-    message_text = (
-        'Поиск: '
-        f'<b>{"включён ✅" if telegram_user.search else "выключен ❌"}</b>'
-    )
+    button_text = texts_model.turn_on_search_button_text \
+        if not telegram_user.search else texts_model.turn_off_search_button_text
 
     message_data = dict(
-        text=message_text,
+        text=texts_model.search_text,
         reply_markup=get_inline_keyboard(
             buttons={button_text: 'change_search_status'},
         )

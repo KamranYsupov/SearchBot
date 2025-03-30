@@ -30,9 +30,9 @@ def get_pagination_buttons(paginator: Paginator, prefix: str) -> dict:
     buttons = {}
     
     if paginator.has_previous():
-        buttons['◀️ Пред.'] = f'{prefix}_{paginator.page_number - 1}'
+        buttons['◀️'] = f'{prefix}_{paginator.page_number - 1}'
     if paginator.has_next():
-        buttons['След. ▶️'] = f'{prefix}_{paginator.page_number + 1}'
+        buttons['▶️'] = f'{prefix}_{paginator.page_number + 1}'
     
     
         

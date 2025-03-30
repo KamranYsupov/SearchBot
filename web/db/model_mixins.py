@@ -1,3 +1,4 @@
+from asgiref.sync import sync_to_async
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ulid import ULID
@@ -51,6 +52,54 @@ class TimestampMixin(models.Model):
     updated_at = models.DateTimeField(
         _('Дата последнего обновления'),
         auto_now=True
+    )
+
+    class Meta:
+        abstract = True
+
+
+class SingletonModel(models.Model):
+    """Singelton модель"""
+
+    def save(self, *args, **kwargs):
+        if self.__class__.objects.count() == 0:
+            super().save(*args, **kwargs)
+        else:
+            existing = self.__class__.objects.get()
+            self.id = existing.id
+            super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @classmethod
+    @sync_to_async
+    def aload(cls):
+        return cls.load()
+
+    class Meta:
+        abstract = True
+
+
+class LanguageMixin(models.Model):
+    RUSSIAN = 'Russian'
+    ENGLISH = 'English'
+    HEBREW = 'Hebrew'
+
+    CHOICES = (
+        (RUSSIAN, 'Русский'),
+        (ENGLISH, 'Английский'),
+        (HEBREW, 'Иврит')
+    )
+
+    language = models.CharField(
+        _('Язык'),
+        choices=CHOICES,
+        default=RUSSIAN,
+        max_length=10,
+        db_index=True
     )
 
     class Meta:

@@ -12,10 +12,12 @@ from bot.handlers.state import KeywordState
 from bot.handlers.utils import array_settings_handler, list_handler
 from bot.keyboards.inline import get_inline_keyboard
 from bot.keyboards.reply import (
-    reply_menu_keyboard,
+    get_reply_menu_keyboard,
     reply_cancel_keyboard, reply_get_chat_keyboard,
 )
+from web.apps.bots.models import BotKeyboard
 from web.apps.search.models import Keyword
+from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
 
 router = Router()
 
@@ -29,14 +31,22 @@ async def project_keywords_settings_handler(
 
     handler_callback_data = f'{project_id}_{previous_page_number}'
 
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
+
     await array_settings_handler(
         callback,
-        list_button_text='Список ключевых слов 🗂',
+        list_button_text=texts_model.keywords_list_button_text,
         callback_prefix='keyword',
         array=keywords,
         list_button_data=f'kws_l_{handler_callback_data}_1',
         add_button_data=f'add_kw_{handler_callback_data}',
-        back_button_data=f'project_{handler_callback_data}'
+        back_button_data=f'project_{handler_callback_data}',
+        message_text=texts_model.choice_action_text,
+        add_button_text=texts_model.add_button_text,
+        back_button_text=texts_model.back_button_text,
     )
 
 
@@ -49,6 +59,12 @@ async def keywords_list_callback_handler(
 
     keywords: List[Keyword] = await Keyword.objects.afilter(project_id=project_id)
     pagination_callback_data = f'{project_id}_{previous_page_number}'
+
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
+
     await list_handler(
         callback,
         callback_prefix=f'keyword_{previous_page_number}',
@@ -56,7 +72,8 @@ async def keywords_list_callback_handler(
         button_text_obj_attr_name='text',
         page_number=page_number,
         per_page=settings.KEYWORDS_PER_PAGE,
-        message_text='Выберите ключевое слово.',
+        message_text=texts_model.keywords_list_text,
+        back_button_text=texts_model.back_button_text,
         back_button_callback_data=f'p_kws_{pagination_callback_data}',
         pagination_buttons_prefix=f'kw_l_{pagination_callback_data}_{page_number}'
     )
@@ -68,18 +85,25 @@ async def keyword_callback_handler(
 ):
     previous_page_number, keyword_id, page_number = callback.data.split('_')[-3:]
     keyword: Keyword = await Keyword.objects.aget(id=keyword_id)
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
     buttons = {
-        'Удалить 🗑': f'ask_rm_kw_{keyword.id}_{previous_page_number}_{page_number}',
-        'Назад 🔙': \
-            f'kws_l_{keyword.project_id}_{previous_page_number}_{page_number}'
+        texts_model.delete_button_text:
+            f'ask_rm_kw_{keyword.id}_{previous_page_number}_{page_number}',
+        texts_model.back_button_text:
+            f'kws_l_{keyword.project_id}_{previous_page_number}_{page_number}',
     }
 
     await callback.message.edit_text(
-        f'<b>Слово:</b> <em>{keyword.text}</em>',
+        texts_model.keyword_text.format(
+            keyword=keyword.text
+        ),
         reply_markup=get_inline_keyboard(
             buttons=buttons,
-            sizes=(1, 1),
+            sizes=(1, 1, ),
         ),
     )
 
@@ -89,15 +113,21 @@ async def ask_rm_keyword_callback_handler(
         callback: types.CallbackQuery,
 ):
     keyword_id, previous_page_number, page_number = callback.data.split('_')[-3:]
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
+
+    buttons = {
+        texts_model.yes_button_text:
+            f'rm_kw_{keyword_id}_{previous_page_number}_{page_number}',
+        texts_model.no_button_text:
+            f'keyword_{previous_page_number}_{keyword_id}_{page_number}'
+    }
 
     await callback.message.edit_text(
-        f'<b>Вы уверены?</b>',
-        reply_markup=get_inline_keyboard(
-            buttons={
-                'Да': f'rm_kw_{keyword_id}_{previous_page_number}_{page_number}',
-                'Нет': f'keyword_{previous_page_number}_{keyword_id}_{page_number}'
-            }
-        ),
+        texts_model.sure_text,
+        reply_markup=get_inline_keyboard(buttons=buttons),
     )
 
 
@@ -110,13 +140,19 @@ async def rm_keyword_callback_handler(
     project_id = keyword.project_id
 
     await keyword.adelete()
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
-    success_text = '<b>Ключевое слово успешно удалено ✅</b>'
-    back_button_text = 'Назад 🔙'
+    success_text = texts_model.successful_rm_keyword_text
     await callback.message.edit_text(
         text=success_text,
         reply_markup=get_inline_keyboard(
-            buttons={back_button_text: f'project_{project_id}_{previous_page_number}'}
+            buttons={
+                texts_model.back_button_text:
+                    f'project_{project_id}_{previous_page_number}'
+            }
         ),
     )
 
@@ -131,10 +167,14 @@ async def add_keywords_handler(
         project_id=project_id,
         previous_page_number=previous_page_number,
     )
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=callback.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
     await callback.message.delete()
     await callback.message.answer(
-        'Отправьте ключевое слово 📝',
+        texts_model.ask_send_keyword_text,
         reply_markup=reply_cancel_keyboard,
     )
     await state.set_state(KeywordState.text)
@@ -148,10 +188,17 @@ async def process_keyword_text_handler(
         message: types.Message,
         state: FSMContext,
 ):
+    telegram_user: TelegramUser = await TelegramUser.objects.aget(
+        telegram_id=message.from_user.id
+    )
+    texts_model: BotTextsUnion = await telegram_user.get_texts_model()
+
     keyword_text_max_length = 150
     if len(message.text) > keyword_text_max_length:
         await message.answer(
-            f'Максимальная длина {keyword_text_max_length} символов'
+            texts_model.keyword_max_length_error_text.format(
+                max_length=keyword_text_max_length
+            )
         )
         return
 
@@ -166,8 +213,9 @@ async def process_keyword_text_handler(
     )()
     if keyword_exists:
         await message.answer(
-            'В данный проект уже добавлено '
-            f'ключевое слово "{message.text}"'
+            texts_model.keyword_exists_error_text.format(
+                keyword=message.text
+            )
         )
         return
 
@@ -176,20 +224,22 @@ async def process_keyword_text_handler(
         project_id=project_id
     )
 
-    await message.answer(
-        '<b>Ключевое слово успешно добавлено ✅</b>',
-        reply_markup=reply_menu_keyboard
-    )
-    await state.clear()
+    menu_keyboard: BotKeyboard = await BotKeyboard.objects.aget(slug='menu')
 
-    previous_page_number = state_data['previous_page_number']
     await message.answer(
-        'Выберите действие.',
+        texts_model.successful_add_keyword_text,
+        reply_markup=await menu_keyboard.as_markup(language=telegram_user.language)
+    )
+    previous_page_number = state_data['previous_page_number']
+
+    await message.answer(
+        texts_model.choice_action_text,
         reply_markup=get_inline_keyboard(
             buttons={
-                'Назад 🔙': \
+                texts_model.back_button_text: \
                     f'p_kws_{project_id}_{previous_page_number}'
             }
         )
     )
+
 
