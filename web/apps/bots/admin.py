@@ -151,6 +151,13 @@ class BotTextsMixinAdmin(SingletonModelAdmin):
                 'successful_rm_lead_chat_text',
             )
         }),
+        ('Тексты рассылок', {
+            'fields': (
+                'match_report_text',
+                'analytic_match_report_text',
+                'share_request_text',
+            )
+        }),
     )
 
 

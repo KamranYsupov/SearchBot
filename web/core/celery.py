@@ -15,10 +15,10 @@ app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
     'send-keyword-search-matches': {
         'task': 'web.apps.search.tasks.send_keyword_search_matches',
-        'schedule': crontab(hour='8', minute='0')
+        'schedule': 40.0 #crontab(hour='8', minute='0')
     },
     'ask-to-share-bot-task': {
         'task': 'web.apps.telegram_users.tasks.send_ask_message_to_share_bot_task',
-        'schedule': crontab(hour='9', minute='0', day_of_month='*/5'),
+        'schedule': 120.0 # crontab(hour='9', minute='0', day_of_month='*/5'),
     },
 }

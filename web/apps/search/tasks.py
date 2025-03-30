@@ -1,6 +1,8 @@
 import asyncio
 from datetime import timedelta
 
+import loguru
+from asgiref.sync import async_to_sync
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
@@ -11,14 +13,15 @@ from web.apps.search.models import (
     Chat,
     Keyword, Project,
 )
-from web.apps.telegram_users.models import TelegramUser
+from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
+from web.db.model_mixins import LanguageMixin
 from web.services.telegram import telegram_service
 from web.apps.telegram_users.tasks import send_message_task
 
 
 @shared_task(ignore_result=True)
 def send_keyword_search_matches():
-    telegram_users = (
+    telegram_users: list[TelegramUser] = (
         TelegramUser.objects
         .prefetch_related('projects__chats', 'projects__keywords')
         .filter(search=True)
@@ -31,7 +34,13 @@ def send_keyword_search_matches():
     update_matches = []
 
     for telegram_user in telegram_users:
-        report_text = f'<b>Аналитика совпадений на {yesterday_date_str}</b>:\n\n'
+        texts_model: BotTextsUnion = async_to_sync(
+            telegram_user.get_texts_model
+        )()
+
+        report_text = texts_model.analytic_match_report_text.format(
+            date=yesterday_date_str
+        ) + '\n\n'
 
         for project in telegram_user.projects.all():
             for keyword in project.keywords.all():
@@ -61,6 +70,10 @@ def send_keyword_search_matches():
 def forward_match_message_and_send_match_info(match_id: str):
     match = Match.objects.get(id=match_id)
     lead_chat_id = match.keyword.project.lead_chat_id
+    telegram_user = match.keyword.project.telegram_user
+    texts_model: BotTextsUnion = async_to_sync(
+        telegram_user.get_texts_model
+    )()
 
     forward_message_response = telegram_service.forward_message(
         chat_id=lead_chat_id,
@@ -68,18 +81,12 @@ def forward_match_message_and_send_match_info(match_id: str):
         message_id=int(match.message_id),
     )
     forward_message_data = forward_message_response.json()
-    message_template = (
-        'Найдено совпадение слова <em>{keyword}</em> '
-        'в чате <b>{chat}</b>!\n\n'
 
-        '<a href="{message_link}">'
-        '<b><em>Ссылка на сообщение</em></b>'
-        '</a>'
-    )
-    message_text = message_template.format(
+    message_text = texts_model.match_report_text.format(
         keyword=match.keyword.text,
         chat=match.chat.name,
-        message_link=match.message_link,
+        author=f'@{match.from_user_username}' if match.from_user_username else '-',
+        message_link=match.message_link if not match.chat.is_private else '-',
     )
     reply_to_message_id = forward_message_data['result']['message_id']
 

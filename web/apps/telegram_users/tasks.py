@@ -1,12 +1,13 @@
 import asyncio
 from datetime import timedelta
 
+from asgiref.sync import async_to_sync
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
 from pyrogram import Client
 
-from web.apps.telegram_users.models import TelegramUser
+from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
 from web.services.telegram import telegram_service
 
 
@@ -19,13 +20,16 @@ def send_message_task(
 
 
 @shared_task(ignore_result=True)
-def send_ask_message_to_share_bot_task(
-    text: str = 'Нравиться наш бот? Поделитесь с друзьями!',
-):
-    chat_ids = TelegramUser.objects.all().values_list(
-        'telegram_id', flat=True
-    )
+def send_ask_message_to_share_bot_task():
+    telegram_users = TelegramUser.objects.all()
 
-    for chat_id in chat_ids:
-        send_message_task.delay(chat_id, text)
+    for telegram_user in telegram_users:
+        texts_model: BotTextsUnion = async_to_sync(
+            telegram_user.get_texts_model
+        )()
+
+        send_message_task.delay(
+            telegram_user.telegram_id,
+            texts_model.share_request_text
+        )
 
