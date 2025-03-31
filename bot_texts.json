@@ -1,0 +1,237 @@
+[
+{
+  "model": "bots.botkeyboard",
+  "pk": "01JQGGB5Q7RJXZXT68ZQ5T7VNE",
+  "fields": {
+    "name": "Главное меню",
+    "slug": "menu"
+  }
+},
+{
+  "model": "bots.botkeyboard",
+  "pk": "01JQJV88AYY04SNMECKP2SVYXQ",
+  "fields": {
+    "name": "Отмена действия",
+    "slug": "cancel"
+  }
+},
+{
+  "model": "bots.botkeyboard",
+  "pk": "01JQJVBKF9H9C835850RH13697",
+  "fields": {
+    "name": "Запрос чата лидов",
+    "slug": "request_chat"
+  }
+},
+{
+  "model": "bots.botkeyboardbutton",
+  "pk": "01JQGGB5Q5NA10Y46Z6W4MBVW4",
+  "fields": {
+    "name": "Поиск",
+    "ru_text": "🔎 Поиск 🔎",
+    "en_text": "🔎 Search 🔎",
+    "he_text": "🔎 חפש 🔎",
+    "keyboard": "01JQGGB5Q7RJXZXT68ZQ5T7VNE"
+  }
+},
+{
+  "model": "bots.botkeyboardbutton",
+  "pk": "01JQGGB5Q6STETB87CYR24PA7N",
+  "fields": {
+    "name": "Проекты",
+    "ru_text": "📁 Проекты 📁",
+    "en_text": "📁 Projects 📁",
+    "he_text": "📁 פרויקטים 📁",
+    "keyboard": "01JQGGB5Q7RJXZXT68ZQ5T7VNE"
+  }
+},
+{
+  "model": "bots.botkeyboardbutton",
+  "pk": "01JQJV88AX73CA2KAB468VPZ07",
+  "fields": {
+    "name": "Кнопка отмена",
+    "ru_text": "Отмена ❌",
+    "en_text": "Cancel ❌",
+    "he_text": "❌ לְבַטֵל",
+    "keyboard": "01JQJV88AYY04SNMECKP2SVYXQ"
+  }
+},
+{
+  "model": "bots.botkeyboardbutton",
+  "pk": "01JQJVBKF79JWY0838ST6JZEN4",
+  "fields": {
+    "name": "Кнопка выбора чата",
+    "ru_text": "Выбрать чат",
+    "en_text": "Choice a chat",
+    "he_text": "בחר צ'אט",
+    "keyboard": "01JQJVBKF9H9C835850RH13697"
+  }
+},
+{
+  "model": "bots.botkeyboardbutton",
+  "pk": "01JQJVBKF8W2MMVERCKM9FWSZX",
+  "fields": {
+    "name": "Кнопка отмена",
+    "ru_text": "Отмена ❌",
+    "en_text": "Cancel ❌",
+    "he_text": "❌ לְבַטֵל",
+    "keyboard": "01JQJVBKF9H9C835850RH13697"
+  }
+},
+{
+  "model": "bots.russianbottexts",
+  "pk": 1,
+  "fields": {
+    "permission_denied_text": "Отказано в доступе ❌",
+    "choice_language_message_text": "Язык успешно выбран!",
+    "choice_action_text": "Выберите действие",
+    "cancel_text": "Отмена ❌",
+    "sure_text": "Вы уверены?",
+    "wait_text": "Подожите . . .",
+    "add_button_text": "Добавить ➕",
+    "delete_button_text": "Удалить 🗑",
+    "back_button_text": "Назад 🔙",
+    "yes_button_text": "Да",
+    "no_button_text": "Нет",
+    "search_text": "Поиск",
+    "turn_on_search_button_text": "Включить",
+    "turn_off_search_button_text": "Выключить",
+    "projects_list_button_text": "Список проектов",
+    "chats_list_button_text": "Список чатов",
+    "keywords_list_button_text": "Список ключевых слов",
+    "projects_list_text": "Выберите проект",
+    "chats_list_text": "Выберите чат",
+    "keywords_list_text": "Выберите ключ слово",
+    "chat_text": "<b>{chat_name}</b> <em>Ссылка: <b>{chat_link}</b></em>",
+    "keyword_text": "<b>Слово:</b> <em>{keyword}</em>",
+    "lead_chat_button_text": "Группа для получения лидов",
+    "project_chats_button_text": "Настройка групп для отслеживания",
+    "project_keywords_button_text": "Ключевые слова",
+    "ask_send_project_name_text": "Отправьте название проекта",
+    "project_name_max_length_error_text": "Максимальная длина {max_length} символов",
+    "project_exists_error_text": "Проект с таким названием уже добавлен",
+    "successful_add_project_text": "Проект успешно добавлен",
+    "successful_rm_project_text": "Проект успешно удален",
+    "ask_send_chat_link_text": "Отправьте ссылку чата",
+    "chat_exists_error_text": "Чат уже добавлен в данный проект",
+    "join_chat_error_text": "Не удалось пресоединится к чату",
+    "successful_add_chat_text": "Чат успешно добавлен",
+    "successful_rm_chat_text": "Чат успешно удален",
+    "ask_send_keyword_text": "Отправьте ключевое слово",
+    "keyword_max_length_error_text": "Максимальная длина {max_length} символов",
+    "keyword_exists_error_text": "Ключевое слово уже добавлено в проект",
+    "successful_add_keyword_text": "Ключевое слово успешно добавлено",
+    "successful_rm_keyword_text": "Ключевое слово успешно удалено",
+    "lead_chat_exists_error_text": "Этот чат уже добавлен другим пользователем",
+    "successful_add_lead_chat_text": "Чат для получения лидов  успешно добавлен. <em>Не забудьте добавить бота в группу для получения совпадений.</em>",
+    "successful_rm_lead_chat_text": "Чат для получения лидов  успешно удален",
+    "match_report_text": "Найдено совпадение слова <em>{keyword}</em> в чате <b>{chat}</b>!\r\n \r\n <b>Автор</b>: {author}\r\n \r\n<b><em>Ссылка на сообщение:</em></b> {message_link}",
+    "analytic_match_report_text": "Аналитика на {date}",
+    "share_request_text": "Поделитесь сервисом!"
+  }
+},
+{
+  "model": "bots.englishbottexts",
+  "pk": 1,
+  "fields": {
+    "permission_denied_text": "Access Denied ❌",
+    "choice_language_message_text": "Language selected successfully!",
+    "choice_action_text": "Select action",
+    "cancel_text": "Cancel ❌",
+    "sure_text": "Are you sure?",
+    "wait_text": "Wait . .  .",
+    "add_button_text": "Add ➕",
+    "delete_button_text": "Delete 🗑",
+    "back_button_text": "Back 🔙",
+    "yes_button_text": "Yes",
+    "no_button_text": "No",
+    "search_text": "Search",
+    "turn_on_search_button_text": "Turn on",
+    "turn_off_search_button_text": "Turn off",
+    "projects_list_button_text": "Projects List",
+    "chats_list_button_text": "Chats List",
+    "keywords_list_button_text": "Keywords List",
+    "projects_list_text": "Choice a project",
+    "chats_list_text": "Choice a chat",
+    "keywords_list_text": "Choice a keyword",
+    "chat_text": "<b>{chat_name}</b> <em>Link: <b>{chat_link}</b></em>",
+    "keyword_text": "<b>Keyword:</b> <em>{keyword}</em>",
+    "lead_chat_button_text": "Lead Generation Chat",
+    "project_chats_button_text": "Tracking chats settings",
+    "project_keywords_button_text": "Keywords",
+    "ask_send_project_name_text": "Submit your project name",
+    "project_name_max_length_error_text": "Maximum length {max_length} characters",
+    "project_exists_error_text": "The project with this name has already added",
+    "successful_add_project_text": "Project added successfully",
+    "successful_rm_project_text": "The project has successfully deleted",
+    "ask_send_chat_link_text": "Send chat link",
+    "chat_exists_error_text": "Chat has already been added to the current project",
+    "join_chat_error_text": "Failed to join the chat",
+    "successful_add_chat_text": "Chat added successfully",
+    "successful_rm_chat_text": "The chat has successfully deleted",
+    "ask_send_keyword_text": "Submit keyword",
+    "keyword_max_length_error_text": "Maximum length {max_length} characters",
+    "keyword_exists_error_text": "The keyword has already been added to the project.",
+    "successful_add_keyword_text": "Keyword added successfully",
+    "successful_rm_keyword_text": "The keyword has successfully deleted",
+    "lead_chat_exists_error_text": "This chat has already been added by another user",
+    "successful_add_lead_chat_text": "Lead Generation Chat added successfully <em>Don't forget to add the bot to the group to get matches.</em>",
+    "successful_rm_lead_chat_text": "The Lead Generation Chat has successfully deleted",
+    "match_report_text": "Found a match for <em>{keyword}</em> in <b>{chat}</b>!\r\n\r\n<b>Author</b>: {author}\r\n\r\n<b><em>Message Link:</em></b> {message_link}",
+    "analytic_match_report_text": "Analytic for {date}",
+    "share_request_text": "1"
+  }
+},
+{
+  "model": "bots.hebrewbottexts",
+  "pk": 1,
+  "fields": {
+    "permission_denied_text": "הגישה נדחתה ❌",
+    "choice_language_message_text": "השפה נבחרה בהצלחה",
+    "choice_action_text": "בחר פעולה",
+    "cancel_text": "בטל ❌",
+    "sure_text": "אתה בטוח?",
+    "wait_text": "רגע .  .  .",
+    "add_button_text": "הוסף ➕",
+    "delete_button_text": "מחק 🗑",
+    "back_button_text": "חזרה 🔙",
+    "yes_button_text": "כֵּן",
+    "no_button_text": "לֹא",
+    "search_text": "לְחַפֵּשׂ",
+    "turn_on_search_button_text": "לְהַפְעִיל",
+    "turn_off_search_button_text": "לְכַבּוֹת",
+    "projects_list_button_text": "רשימת פרויקטים",
+    "chats_list_button_text": "רשימת צ'אטים",
+    "keywords_list_button_text": "רשימת מילות מפתח",
+    "projects_list_text": "בחירת פרויקט",
+    "chats_list_text": "בחר צ'אט",
+    "keywords_list_text": "בחר מילת מפתח",
+    "chat_text": "<b>{chat_name}</b>\\n\\n <em>קישור: <b>{chat_link}</b></em>",
+    "keyword_text": "<b>מילת מפתח:</b> <em>{keyword}</em>",
+    "lead_chat_button_text": "צ'אט יצירת לידים",
+    "project_chats_button_text": "מעקב אחר הגדרות צ'אטים",
+    "project_keywords_button_text": "מילות מפתח",
+    "ask_send_project_name_text": "שלח את שם הפרויקט שלך",
+    "project_name_max_length_error_text": "אורך מקסימלי {max_length} תווים",
+    "project_exists_error_text": "הפרויקט בשם זה כבר נוסף",
+    "successful_add_project_text": "הפרויקט נוסף בהצלחה",
+    "successful_rm_project_text": "הפרויקט נמחק בהצלחה",
+    "ask_send_chat_link_text": "שלח קישור לצ'אט",
+    "chat_exists_error_text": "הצ'אט כבר נוסף לפרויקט הנוכחי",
+    "join_chat_error_text": "ההצטרפות לצ'אט נכשלה",
+    "successful_add_chat_text": "הצ'אט נוסף בהצלחה",
+    "successful_rm_chat_text": "הצ'אט נמחק בהצלחה",
+    "ask_send_keyword_text": "שלח מילת מפתח",
+    "keyword_max_length_error_text": "אורך מקסימלי {max_length} תווים",
+    "keyword_exists_error_text": "מילת המפתח כבר נוספה לפרויקט.",
+    "successful_add_keyword_text": "מילת מפתח נוספה בהצלחה",
+    "successful_rm_keyword_text": "מילת המפתח נמחקה בהצלחה",
+    "lead_chat_exists_error_text": "צ'אט זה כבר הוסף על ידי משתמש אחר",
+    "successful_add_lead_chat_text": "צ'אט יצירת לידים נוסף בהצלחה  אל תשכח להוסיף את הבוט לקבוצה כדי לקבל התאמות.",
+    "successful_rm_lead_chat_text": "הצ'אט ליצירת לידים נמחק בהצלחה",
+    "match_report_text": "נמצא התאמה עבור <em>{keyword}</em> בצ'אט <b>{chat}</b>!\r\n \r\n {author} <b>מחבר</b> \r\n \r\n {message_link} <b><em>:קישור להודעה</em></b>",
+    "analytic_match_report_text": "אנליטי עבור {date}",
+    "share_request_text": "שתפו את השירות שלנו!"
+  }
+}
+]
