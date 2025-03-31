@@ -26,7 +26,7 @@ class TelegramUserAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if not obj:
-            del self.readonly_fields[0] # .remove('telegram_id')
+            return self.readonly_fields[1:] # .remove('telegram_id')
 
         return self.readonly_fields
 
