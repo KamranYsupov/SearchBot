@@ -51,6 +51,7 @@ async def projects_settings_handler(
     telegram_user: TelegramUser = await TelegramUser.objects.aget(
         telegram_id=aiogram_type.from_user.id
     )
+    projects = await Project.objects.afilter(telegram_user_id=telegram_user.id)
 
     texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
