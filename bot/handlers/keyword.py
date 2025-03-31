@@ -232,6 +232,7 @@ async def process_keyword_text_handler(
     )
     previous_page_number = state_data['previous_page_number']
 
+    await state.clear()
     await message.answer(
         texts_model.choice_action_text,
         reply_markup=get_inline_keyboard(
