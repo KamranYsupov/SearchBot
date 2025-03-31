@@ -153,7 +153,7 @@ async def rm_chat_callback_handler(
     await chat.adelete()
 
     await callback.message.edit_text(
-        texts_model.successful_rm_project_text,
+        texts_model.successful_rm_chat_text,
         reply_markup=get_inline_keyboard(
             buttons={
                 texts_model.back_button_text:
