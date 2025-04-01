@@ -222,7 +222,10 @@ async def process_project_name_handler(
         return
 
     project_exists: bool = await sync_to_async(
-        Project.objects.filter(name=message.text).exists
+        Project.objects.filter(
+            telegram_user_id=telegram_user.id,
+            name=message.text,
+        ).exists
     )()
     if project_exists:
         await message.answer(texts_model.project_exists_error_text)
