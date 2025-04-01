@@ -79,7 +79,7 @@ async def chats_list_callback_handler(
         message_text=texts_model.chats_list_text,
         back_button_text=texts_model.back_button_text,
         back_button_callback_data=f'p_chats_{pagination_callback_data}',
-        pagination_buttons_prefix=f'chats_l_{pagination_callback_data}_{page_number}',
+        pagination_buttons_prefix=f'chats_l_{pagination_callback_data}',
     )
 
 

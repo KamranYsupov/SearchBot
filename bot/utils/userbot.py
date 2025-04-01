@@ -2,8 +2,8 @@ from typing import Optional, Union, Tuple
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
-from pyrogram import types
-from pyrogram.errors import UsernameInvalid, RPCError
+from pyrogram import types, Client
+from pyrogram.errors import UsernameInvalid, RPCError, UserAlreadyParticipant
 
 from bot.keyboards.reply import get_reply_menu_keyboard
 from web.apps.bots.models import UserBot
@@ -22,15 +22,17 @@ async def join_chat(
     async with user_bot.configure_client(
             session_workdir=user_bot_session_workdir
     ) as client:
+
         try:
-            chat = await client.join_chat(chat_link)
-        except UsernameInvalid:
-            chat_username = chat_link.split('/')[-1]
-            is_private = False
+            chat_id = chat_link
             try:
-                chat = await client.join_chat(chat_username)
-            except RPCError:
-                pass
+                chat = await client.join_chat(chat_id)
+            except UsernameInvalid:
+                chat_id = chat_link.split('/')[-1]
+                is_private = False
+                chat = await client.join_chat(chat_id)
+        except UserAlreadyParticipant:
+            chat = await client.get_chat(chat_id)
         except RPCError:
             pass
 

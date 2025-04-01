@@ -75,7 +75,7 @@ async def keywords_list_callback_handler(
         message_text=texts_model.keywords_list_text,
         back_button_text=texts_model.back_button_text,
         back_button_callback_data=f'p_kws_{pagination_callback_data}',
-        pagination_buttons_prefix=f'kw_l_{pagination_callback_data}_{page_number}'
+        pagination_buttons_prefix=f'kws_l_{pagination_callback_data}'
     )
 
 
