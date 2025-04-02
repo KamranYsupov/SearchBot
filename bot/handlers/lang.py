@@ -1,5 +1,6 @@
 import loguru
 from aiogram import Router, types, F
+from aiogram.filters import Command
 from asgiref.sync import sync_to_async
 
 from bot.keyboards.inline import get_inline_keyboard
@@ -8,6 +9,25 @@ from web.apps.bots.models import BotKeyboard
 from web.apps.telegram_users.models import TelegramUser
 
 router = Router()
+
+
+@router.message(Command('lang'))
+async def lang_command_handler(message: types.Message):
+    text = f'Выбери язык:'
+
+    buttons = {
+        'Русский': 'lang_russian',
+        'English': 'lang_english',
+        'עִברִית': 'lang_hebrew'}
+
+    await message.answer(
+        text,
+        reply_markup=get_inline_keyboard(
+            buttons=buttons,
+            sizes=(1, 1, 1)
+        ),
+    )
+
 
 @router.callback_query(F.data.startswith('lang_'))
 async def language_callback_handler(

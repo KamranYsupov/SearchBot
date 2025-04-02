@@ -70,7 +70,7 @@ async def list_handler(
         paginator, prefix=f'{callback_prefix}s_list' if not pagination_buttons_prefix \
         else pagination_buttons_prefix
     )
-    sizes = (1,) * per_page
+    sizes = (1,) * len(buttons.items())
 
     if not pagination_buttons:
         pass

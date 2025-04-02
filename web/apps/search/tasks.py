@@ -81,7 +81,6 @@ def forward_match_message_and_send_match_info(match_id: str):
         message_id=int(match.message_id),
     )
     forward_message_data = forward_message_response.json()
-
     message_text = texts_model.match_report_text.format(
         keyword=match.keyword.text,
         chat=match.chat.name,

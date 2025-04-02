@@ -5,13 +5,16 @@ from aiogram import Router, types, F
 from aiogram.filters import StateFilter, or_f
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+from dependency_injector.wiring import inject, Provide
 from django.conf import settings
+from pyrogram import Client
 
+from bot.container import Container
 from bot.handlers.state import ProjectState
 from bot.handlers.utils import array_settings_handler, list_handler
 from bot.keyboards.inline import get_inline_keyboard
 from bot.keyboards.reply import get_reply_menu_keyboard, reply_cancel_keyboard
-from bot.utils.userbot import leave_chat
+from bot.utils.userbot import leave_chat, get_client
 from web.apps.bots.models import UserBot, BotKeyboard
 from web.apps.search.models import Chat, Project
 from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
@@ -141,8 +144,10 @@ async def ask_rm_project_callback_handler(
 
 
 @router.callback_query(F.data.startswith('rm_project_'))
+@inject
 async def rm_project_callback_handler(
         callback: types.CallbackQuery,
+        client_1: Client = Provide[Container.client_1],
 ):
     project_id = callback.data.split('_')[-1]
     project: Project = await Project.objects.aget(id=project_id)
@@ -157,6 +162,8 @@ async def rm_project_callback_handler(
         await callback.message.edit_text(texts_model.wait_text)
 
         user_bot: UserBot = await UserBot.objects.aget(id=project_chats[0].user_bot_id)
+        clients = [client_1]
+        client = get_client(name=user_bot.name, clients=clients)
 
         for chat in project_chats:
             if chat.user_bot_id != user_bot.id:
@@ -164,7 +171,11 @@ async def rm_project_callback_handler(
                     id=chat.user_bot_id
                 )
 
-            await leave_chat(chat.chat_id, user_bot)
+            await leave_chat(
+                chat.chat_id,
+                client=client,
+                user_bot=user_bot
+            )
 
     await project.adelete()
 

@@ -5,7 +5,6 @@ from django.db.models.functions import Lower
 from pyrogram import Client, types, filters
 from pyrogram.handlers import MessageHandler
 
-from bot.loader import bot
 from userbots.utils.search import keyword_search
 from web.apps.search.models import Chat, Keyword, Match
 

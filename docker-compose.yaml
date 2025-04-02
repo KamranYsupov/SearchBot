@@ -73,14 +73,6 @@ services:
       dockerfile: web.dockerfile
     container_name: ${PROJECT_NAME}_web
 
-  user_bots:
-    <<: *base_python
-    build:
-      context: .
-      dockerfile: bot.dockerfile
-    container_name: ${PROJECT_NAME}_user_bots
-    command: python userbots/main.py
-
   bot:
     <<: *base_python
     build:

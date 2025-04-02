@@ -25,8 +25,7 @@ class UserBotAdmin(admin.ModelAdmin):
         'api_id',
         'api_hash',
         'phone_number',
-        'session_1',
-        'session_2',
+        'session_string',
     )
     readonly_fields = (
         'api_id',

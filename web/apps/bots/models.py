@@ -45,15 +45,10 @@ class UserBot(AsyncBaseModel):
         db_index=True
     )
 
-    session_1 = models.FileField(
-        _('Файл сессии 1(.session)'),
-        upload_to=settings.USER_BOTS_SESSIONS_DIR_1,
+    session_string = models.TextField(
+        _('Строка сессии'),
         unique=True,
-    )
-    session_2 = models.FileField(
-        _('Файл сессии 2(.session)'),
-        upload_to=settings.USER_BOTS_SESSIONS_DIR_2,
-        unique=True,
+        default='1'
     )
 
     chats_count = models.PositiveIntegerField(
@@ -63,20 +58,6 @@ class UserBot(AsyncBaseModel):
 
     def __str__(self):
         return f'Юзербот: {self.name}'
-
-    def configure_client(
-            self,
-            session_workdir: str = str(settings.USER_BOTS_SESSIONS_ROOT_1)
-    ) -> Client:
-        client = Client(
-            name=self.name,
-            api_hash=self.api_hash,
-            api_id=self.api_id,
-            phone_number=self.phone_number,
-            workdir=session_workdir,
-        )
-
-        return client
 
 
 class BotKeyboard(AsyncBaseModel):

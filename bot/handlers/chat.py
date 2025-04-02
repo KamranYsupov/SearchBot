@@ -6,11 +6,13 @@ from aiogram import Router, types, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+from dependency_injector.wiring import inject, Provide
 from django.conf import settings
 from pyrogram import Client
 from pyrogram.enums import ChatType
 from pyrogram.errors import BadRequest, NotAcceptable, UsernameInvalid
 
+from bot.container import Container
 from bot.handlers.state import ChatState
 from bot.handlers.utils import array_settings_handler, list_handler
 from bot.keyboards.inline import get_inline_keyboard
@@ -18,13 +20,13 @@ from bot.keyboards.reply import get_reply_menu_keyboard, reply_get_chat_keyboard
     reply_cancel_keyboard
 from bot.utils.bot import edit_text_or_answer
 from bot.utils.pagination import Paginator, get_pagination_buttons
-from bot.utils.userbot import join_chat, leave_chat
+from bot.utils.userbot import join_chat, leave_chat, get_client
+from userbots.handlers import message_handler
 from web.apps.bots.models import UserBot, BotKeyboard
 from web.apps.search.models import Chat, Keyword
 from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
 
 router = Router()
-
 
 @router.callback_query(F.data.startswith('p_chats_'))
 async def project_chats_settings_handler(
@@ -134,8 +136,10 @@ async def ask_rm_chat_callback_handler(
 
 
 @router.callback_query(F.data.startswith('rm_chat_'))
+@inject
 async def rm_chat_callback_handler(
         callback: types.CallbackQuery,
+        client_1: Client = Provide[Container.client_1],
 ):
     chat_id, previous_page_number, page_number = callback.data.split('_')[-3:]
     chat: Chat = await Chat.objects.aget(id=chat_id)
@@ -149,7 +153,14 @@ async def rm_chat_callback_handler(
     await callback.message.edit_text(texts_model.wait_text)
 
     user_bot = await UserBot.objects.aget(id=chat.user_bot_id)
-    await leave_chat(chat.chat_id, user_bot)
+    clients = [client_1]
+    client = get_client(name=user_bot.name, clients=clients)
+
+    await leave_chat(
+        chat.chat_id,
+        client=client,
+        user_bot=user_bot
+    )
     await chat.adelete()
 
     await callback.message.edit_text(
@@ -192,9 +203,11 @@ async def add_chat_callback_handler(
     StateFilter(ChatState.chat_link),
     F.text,
 )
+@inject
 async def process_chat_link_handler(
         message: types.Message,
         state: FSMContext,
+        client_1: Client = Provide[Container.client_1],
 ):
     chat_link = message.text
     state_data = await state.update_data(chat_link=chat_link)
@@ -219,8 +232,12 @@ async def process_chat_link_handler(
     user_bot: UserBot = await sync_to_async(
         UserBot.objects.filter(chats_count__lt=500).first
     )()
+    clients = [client_1]
+    client = get_client(name=user_bot.name, clients=clients)
+
     pyrogram_chat, is_private = await join_chat(
         chat_link=chat_link,
+        client=client,
         user_bot=user_bot,
         return_is_private=True,
     )
