@@ -194,35 +194,52 @@ async def process_keyword_text_handler(
     texts_model: BotTextsUnion = await telegram_user.get_texts_model()
 
     keyword_text_max_length = 150
-    if len(message.text) > keyword_text_max_length:
-        await message.answer(
-            texts_model.keyword_max_length_error_text.format(
-                max_length=keyword_text_max_length
+    keywords = message.text.split(',')
+
+    for keyword in keywords:
+        if len(keyword) > keyword_text_max_length:
+            await message.answer(
+                texts_model.keyword_max_length_error_text.format(
+                    max_length=keyword_text_max_length
+                )
             )
-        )
-        return
+            return
 
     state_data = await state.get_data()
     project_id = state_data['project_id']
 
-    keyword_exists = await sync_to_async(
-        Keyword.objects.filter(
-            text=message.text,
-            project_id=project_id
-        ).exists
-    )()
-    if keyword_exists:
+
+    existing_keywords = await sync_to_async(list)(
+        await sync_to_async(
+            Keyword.objects.filter(
+                text__in=keywords,
+                project_id=project_id
+            ).values_list
+        )('text', flat=True)
+    )
+
+    if existing_keywords and len(keywords) == 1:
         await message.answer(
-            texts_model.keyword_exists_error_text.format(
-                keyword=message.text
-            )
+            texts_model.keyword_exists_error_text.format(keyword=message.text)
         )
         return
+    else:
+        unique_keywords = []
 
-    await Keyword.objects.acreate(
-        text=message.text,
-        project_id=project_id
-    )
+        for keyword in keywords:
+            if keyword not in existing_keywords:
+                unique_keywords.append(
+                    Keyword(text=keyword, project_id=project_id)
+                )
+                continue
+
+            await message.answer(
+                texts_model.keyword_exists_error_text.format(keyword=message.text)
+            )
+            return
+
+
+    await sync_to_async(Keyword.objects.bulk_create)(unique_keywords)
 
     menu_keyboard: BotKeyboard = await BotKeyboard.objects.aget(slug='menu')
 
