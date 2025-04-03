@@ -29,7 +29,12 @@ def main():
     utils.get_peer_type = get_peer_type_new
 
     user_bots: List[UserBot] = UserBot.objects.all()
-
+    if not user_bots:
+        loguru.logger.warning(
+            'Создайте юзербота в админ панели, '
+            'или через userbots/login.py перед запуском контейнера'
+        )
+        return
     clients = [
         TelegramClient(
             session=StringSession(user_bot.telethon_session_string),
@@ -38,6 +43,7 @@ def main():
         )
         for user_bot in user_bots
     ]
+
 
     client = clients[0]
 
