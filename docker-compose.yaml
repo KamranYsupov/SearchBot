@@ -81,6 +81,14 @@ services:
     container_name: ${PROJECT_NAME}_bot
     command: python bot/main.py
 
+  user_bot:
+    <<: *base_python
+    build:
+      context: .
+      dockerfile: bot.dockerfile
+    container_name: ${PROJECT_NAME}_user_bot
+    command: python userbots/main.py
+
   redis:
     image: redis:7.0.11-alpine
     hostname: redis

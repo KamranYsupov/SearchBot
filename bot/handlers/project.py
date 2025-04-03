@@ -147,7 +147,7 @@ async def ask_rm_project_callback_handler(
 @inject
 async def rm_project_callback_handler(
         callback: types.CallbackQuery,
-        client_1: Client = Provide[Container.client_1],
+        pyrogram_client_1: Client = Provide[Container.pyrogram_client_1],
 ):
     project_id = callback.data.split('_')[-1]
     project: Project = await Project.objects.aget(id=project_id)
@@ -162,7 +162,7 @@ async def rm_project_callback_handler(
         await callback.message.edit_text(texts_model.wait_text)
 
         user_bot: UserBot = await UserBot.objects.aget(id=project_chats[0].user_bot_id)
-        clients = [client_1]
+        clients = [pyrogram_client_1]
         client = get_client(name=user_bot.name, clients=clients)
 
         for chat in project_chats:
@@ -246,14 +246,25 @@ async def process_project_name_handler(
     telegram_user: TelegramUser = await TelegramUser.objects.aget(
         telegram_id=message.from_user.id
     )
-    await Project.objects.acreate(
+    project = await Project.objects.acreate(
         **state_data,
         telegram_user_id=telegram_user.id
     )
 
     menu_keyboard: BotKeyboard = await BotKeyboard.objects.aget(slug='menu')
+    await state.clear()
+
     await message.answer(
         texts_model.successful_add_project_text,
         reply_markup=await menu_keyboard.as_markup(language=telegram_user.language)
     )
-    await state.clear()
+    await message.answer(
+        texts_model.choice_action_text,
+        reply_markup=get_inline_keyboard(
+            buttons={
+                texts_model.back_button_text: \
+                    f'project_{project.id}_1'
+            }
+        )
+    )
+

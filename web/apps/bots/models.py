@@ -19,11 +19,6 @@ from pyrogram import Client
 
 class UserBot(AsyncBaseModel):
     """Модель юзер бота"""
-    telegram_id = models.BigIntegerField(
-        verbose_name=_('Телеграм ID'),
-        unique=True,
-        db_index=True,
-    )
     name = models.CharField(
         _('Имя пользователя'),
         max_length=100,
@@ -45,10 +40,17 @@ class UserBot(AsyncBaseModel):
         db_index=True
     )
 
-    session_string = models.TextField(
-        _('Строка сессии'),
+    pyrogram_session_string = models.TextField(
+        _('Строка сессии(pyrogram)'),
         unique=True,
-        default='1'
+        null=True,
+        default=None
+    )
+    telethon_session_string = models.TextField(
+        _('Строка сессии(telethon)'),
+        unique=True,
+        null=True,
+        default=None
     )
 
     chats_count = models.PositiveIntegerField(

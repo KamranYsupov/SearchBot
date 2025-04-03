@@ -21,7 +21,6 @@ from bot.keyboards.reply import get_reply_menu_keyboard, reply_get_chat_keyboard
 from bot.utils.bot import edit_text_or_answer
 from bot.utils.pagination import Paginator, get_pagination_buttons
 from bot.utils.userbot import join_chat, leave_chat, get_client
-from userbots.handlers import message_handler
 from web.apps.bots.models import UserBot, BotKeyboard
 from web.apps.search.models import Chat, Keyword
 from web.apps.telegram_users.models import TelegramUser, BotTextsUnion
@@ -139,7 +138,7 @@ async def ask_rm_chat_callback_handler(
 @inject
 async def rm_chat_callback_handler(
         callback: types.CallbackQuery,
-        client_1: Client = Provide[Container.client_1],
+        pyrogram_client_1: Client = Provide[Container.pyrogram_client_1],
 ):
     chat_id, previous_page_number, page_number = callback.data.split('_')[-3:]
     chat: Chat = await Chat.objects.aget(id=chat_id)
@@ -153,7 +152,7 @@ async def rm_chat_callback_handler(
     await callback.message.edit_text(texts_model.wait_text)
 
     user_bot = await UserBot.objects.aget(id=chat.user_bot_id)
-    clients = [client_1]
+    clients = [pyrogram_client_1]
     client = get_client(name=user_bot.name, clients=clients)
 
     await leave_chat(
@@ -207,7 +206,7 @@ async def add_chat_callback_handler(
 async def process_chat_link_handler(
         message: types.Message,
         state: FSMContext,
-        client_1: Client = Provide[Container.client_1],
+        pyrogram_client_1: Client = Provide[Container.pyrogram_client_1],
 ):
     chat_link = message.text
     state_data = await state.update_data(chat_link=chat_link)
@@ -232,7 +231,7 @@ async def process_chat_link_handler(
     user_bot: UserBot = await sync_to_async(
         UserBot.objects.filter(chats_count__lt=500).first
     )()
-    clients = [client_1]
+    clients = [pyrogram_client_1]
     client = get_client(name=user_bot.name, clients=clients)
 
     pyrogram_chat, is_private = await join_chat(

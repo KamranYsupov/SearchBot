@@ -17,13 +17,13 @@ from bot.container import Container
 
 @inject
 async def main(
-    client_1: Client = Provide[Container.client_1],
+    pyrogram_client_1: Client = Provide[Container.pyrogram_client_1],
+
 ):
     """Запуск юзер ботов"""
     from middlewares.throttling import rate_limit_middleware
     from handlers.routing import get_main_router
     from userbots.utils.peer import get_peer_type_new
-    from userbots.handlers import message_handler
     from bot.loader import bot, dp
 
 
@@ -32,15 +32,14 @@ async def main(
     dp.message.middleware(rate_limit_middleware)
     dp.include_routers(get_main_router())
 
-    clients = [client_1]
+    pyrogram_clients = [pyrogram_client_1]
 
     try:
-        for client in clients:
-            client.add_handler(message_handler)
+        for client in pyrogram_clients:
             await client.start()
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
-        for client in clients:
+        for client in pyrogram_clients:
             await client.stop()
         await bot.session.close()
 

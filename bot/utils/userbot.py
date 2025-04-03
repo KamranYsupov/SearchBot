@@ -6,7 +6,6 @@ from pyrogram import types, Client
 from pyrogram.errors import UsernameInvalid, RPCError, UserAlreadyParticipant
 
 from bot.keyboards.reply import get_reply_menu_keyboard
-from userbots.handlers import message_handler
 from web.apps.bots.models import UserBot
 from web.apps.search.models import Chat
 

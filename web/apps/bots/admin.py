@@ -20,12 +20,12 @@ from web.admin.mixins import (
 @admin.register(UserBot)
 class UserBotAdmin(admin.ModelAdmin):
     fields = (
-        'telegram_id',
         'name',
         'api_id',
         'api_hash',
         'phone_number',
-        'session_string',
+        'pyrogram_session_string',
+        'telethon_session_string',
     )
     readonly_fields = (
         'api_id',
