@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import django
 import loguru
@@ -14,6 +15,7 @@ from userbots.handlers import handle_groups
 from bot.container import Container
 from userbots.utils.peer import get_peer_type_new
 
+
 def main():
     """
     Функция для запуска telethon юзерботов,
@@ -21,10 +23,12 @@ def main():
     создавать новый docker контейнер, т. к. telethon
     не позволяет запускать бота в фоновом режиме без блокировки остальной части программы.
     ИЛИ рассмотреть вариант с asyncio.gather()
+
+    ПРЕДПОЧТИТЕЛЬНЕЙ будет вариант с новым контейнером
     """
     utils.get_peer_type = get_peer_type_new
 
-    user_bots: list[UserBot] = UserBot.objects.all()
+    user_bots: List[UserBot] = UserBot.objects.all()
 
     clients = [
         TelegramClient(
