@@ -103,6 +103,8 @@ class Match(AsyncBaseModel, TimestampMixin):
     message_id = models.PositiveIntegerField(
         _('ID сообщения в буферной группе'),
         db_index=True,
+        null=True,
+        default=None,
     )
     from_user_username = models.CharField(
         _('Username автора сообщения'),

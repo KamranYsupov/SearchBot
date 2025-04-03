@@ -71,20 +71,24 @@ async def handle_groups(
             if not keyword.project.telegram_user.search:
                 continue
 
+            match = Match(
+                message_link=get_message_link(event_chat, event.message.id),
+                from_user_username=event_sender.username,
+                chat_id=chat.id,
+                keyword_id=keyword.id
+            )
+
+            forwarded_message_id = None
+
             try:
                 forwarded_messages = await pyrogram_client.forward_messages(
                     chat_id=settings.KEYWORDS_MATCHES_BUFFER_GROUP_ID,
                     from_chat_id=event.chat_id,
                     message_ids=[event.message.id],
                 )
-                match = Match(
-                    message_id=forwarded_messages[0].id,
-                    message_link=get_message_link(event_chat, event.message.id),
-                    from_user_username=event_sender.username,
-                    chat_id=chat.id,
-                    keyword_id=keyword.id
-                )
-                await match.asave()
-
+                forwarded_message_id = forwarded_messages[0].id
             except BadRequest:
                 pass
+
+            match.message_id = forwarded_message_id
+            await match.asave()

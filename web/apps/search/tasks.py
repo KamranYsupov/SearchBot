@@ -74,20 +74,24 @@ def forward_match_message_and_send_match_info(match_id: str):
     texts_model: BotTextsUnion = async_to_sync(
         telegram_user.get_texts_model
     )()
+    reply_to_message_id = None
 
-    forward_message_response = telegram_service.forward_message(
-        chat_id=lead_chat_id,
-        from_chat_id=settings.KEYWORDS_MATCHES_BUFFER_GROUP_ID,
-        message_id=int(match.message_id),
-    )
-    forward_message_data = forward_message_response.json()
+    if match.message_id:
+        forward_message_response = telegram_service.forward_message(
+            chat_id=lead_chat_id,
+            from_chat_id=settings.KEYWORDS_MATCHES_BUFFER_GROUP_ID,
+            message_id=int(match.message_id),
+        )
+        forward_message_data = forward_message_response.json()
+        reply_to_message_id = forward_message_data['result']['message_id']
+
     message_text = texts_model.match_report_text.format(
         keyword=match.keyword.text,
         chat=match.chat.name,
         author=f'@{match.from_user_username}' if match.from_user_username else '-',
         message_link=match.message_link if not match.chat.is_private else '-',
     )
-    reply_to_message_id = forward_message_data['result']['message_id']
+
 
     telegram_service.send_message(
         chat_id=lead_chat_id,
