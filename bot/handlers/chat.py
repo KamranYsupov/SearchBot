@@ -155,11 +155,14 @@ async def rm_chat_callback_handler(
     clients = [pyrogram_client_1]
     client = get_client(name=user_bot.name, clients=clients)
 
-    await leave_chat(
-        chat.chat_id,
-        client=client,
-        user_bot=user_bot
-    )
+    chats = await Chat.objects.afilter(chat_id=chat.chat_id)
+    if len(chats) == 1:
+        await leave_chat(
+            chat.chat_id,
+            client=client,
+            user_bot=user_bot
+        )
+
     await chat.adelete()
 
     await callback.message.edit_text(
